@@ -36,41 +36,56 @@ def secure_page():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     form = LoginForm()
+
     if form.validate_on_submit():
         # change this to actually validate the entire form submission
         # and not just one field
-        if form.username.data:
-            # Get the username and password values from the form.
-            username = form.username.data
-            password = form.password.data
+    
+        # Get the username and password values from the form.
+        username = form.username.data
+        password = form.password.data
 
-            # using your model, query database for a user based on the username
-            # and password submitted. Remember you need to compare the password hash.
-            # You will need to import the appropriate function to do so.
-            # Then store the result of that query to a `user` variable so it can be
-            # passed to the login_user() method below.
+        # using your model, query database for a user based on the username
+        # and password submitted. Remember you need to compare the password hash.
+        # You will need to import the appropriate function to do so.
+        # Then store the result of that query to a `user` variable so it can be
+        # passed to the login_user() method below.
 
-            user = UserProfile.query.filter_by(username=username).first()
-            if user:
-                if check_password_hash(user.password, password):
-                    user.authenticated = True
-                    db.session.add(user)
-                    db.session.commit()
+        user = UserProfile.query.filter_by(username=username).first()
+
+        if user and check_password_hash(user.password, password):
+            user.authenticated = True 
+            db.session.add(user)
+            db.session.commit()
+
+            login_user(user, remember=True)
+
+            flash("Logged in sucessfully!","success")
 
             # get user id, load into session
-                    login_user(user, remember = True)
-                    flash("Logged in sucessfully!")
-
             # remember to flash a message to the user
-                    return redirect(url_for("secure_page"))  # they should be redirected to a secure-page route instead
+            # they should be redirected to a secure-page route instead
+
+            return redirect(url_for('secure_page'))
+           
+       
+        flash('Username or Password is incorrect.', 'danger')    
+
     return render_template("login.html", form=form)
 
 @app.route("/logout")
 @login_required
-def logout_user():
+def logout():
+
+    user = current_user
+    user.authenticated = False 
+    db.session.add(user)
+    db.session.commit()
+
     logout_user()
-    flash("You are log out")
-    return redirect(url_for('home'))
+    flash("You are log out","danger")
+    
+    return redirect(url_for('about'))
 
 
 
