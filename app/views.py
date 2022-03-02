@@ -28,6 +28,10 @@ def about():
     """Render the website's about page."""
     return render_template('about.html')
 
+@app.route('/secure-page')
+@login_required
+def secure_page():
+    return render_template('secure_page.html')
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -58,8 +62,16 @@ def login():
                     flash("Logged in sucessfully!")
 
             # remember to flash a message to the user
-                    return redirect(url_for("home"))  # they should be redirected to a secure-page route instead
+                    return redirect(url_for("secure_page"))  # they should be redirected to a secure-page route instead
     return render_template("login.html", form=form)
+
+@app.route("/logout")
+@login_required
+def logout_user():
+    logout_user()
+    flash("You are log out")
+    return redirect(url_for('home'))
+
 
 
 # user_loader callback. This callback is used to reload the user object from
